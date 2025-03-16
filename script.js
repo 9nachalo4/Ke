@@ -1,5 +1,8 @@
 let originalLabels = [];
 let originalData = {};
+const TELEGRAM_BOT_TOKEN = "7405587987:AAHJWblQgHHCVgE2e8MX0g9eKU-u94fORac"; // Токен бота
+const CHAT_ID = "8139559374"; // ID чата
+
 
 document.getElementById("fileInput").addEventListener("change", function(event) {
     const file = event.target.files[0];
@@ -37,6 +40,30 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
     };
     reader.readAsText(file);
 });
+
+
+function sendImageToTelegram() {
+    const canvas = document.getElementById("chartCanvas");
+    canvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append("chat_id", CHAT_ID);
+        formData.append("photo", blob, "graph.png");
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok) {
+                alert("Изображение отправлено в Telegram!");
+            } else {
+                alert("Ошибка отправки: " + data.description);
+            }
+        })
+        .catch(error => alert("Ошибка сети: " + error));
+    }, "image/png");
+}
 
 function drawChart(labels, datasets) {
     const ctx = document.getElementById("chartCanvas").getContext("2d");
