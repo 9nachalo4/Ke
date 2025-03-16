@@ -1,3 +1,6 @@
+let chart;
+let scrollBar = document.getElementById("scrollBar");
+
 document.getElementById("fileInput").addEventListener("change", function(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -6,86 +9,80 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
     reader.onload = function(e) {
         const lines = e.target.result.split("\n").filter(line => line.trim() !== "");
         const labels = [];
-        const datasets = {
-            "Реактор 1": { data: [], color: "orange" },
-            "Реактор 2": { data: [], color: "red" },
-            "Реактор 3": { data: [], color: "pink" },
-            "Куб": { data: [], color: "magenta" },
-            "Холодильник": { data: [], color: "blue" }
-        };
+        const data = [];
 
         lines.forEach(line => {
-            const parts = line.split(" --- ");
-            if (parts.length < 6) return;
-
-            labels.push(parts[0].trim()); // Время фиксации
-
-            Object.keys(datasets).forEach((key, index) => {
-                const match = parts[index + 1].match(/[-+]?\d*\.\d+/);
-                if (match) {
-                    datasets[key].data.push(parseFloat(match[0]));
-                }
-            });
+            const [time, value] = line.split(',');
+            if (time && value) {
+                labels.push(time.trim());
+                data.push(parseFloat(value.trim()));
+            }
         });
 
-        createChart(labels, datasets);
+        if (chart) {
+            chart.destroy();
+        }
+
+        const ctx = document.getElementById("chartCanvas").getContext("2d");
+        chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Значение",
+                    data: data,
+                    borderColor: "blue",
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: "Время" } },
+                    y: { title: { display: true, text: "Значение" } }
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: "x"
+                        }
+                    }
+                }
+            }
+        });
+
+        // Настройка полосы прокрутки
+        scrollBar.max = labels.length - 10;
+        scrollBar.value = 0;
     };
     reader.readAsText(file);
 });
 
-function createChart(labels, datasets) {
-    const ctx = document.getElementById("chartCanvas").getContext("2d");
-    if (window.myChart) {
-        window.myChart.destroy();
-    }
+// Прокрутка графика полосой
+scrollBar.addEventListener("input", function() {
+    const minIndex = parseInt(scrollBar.value);
+    const maxIndex = minIndex + 10;
 
-    window.myChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: Object.keys(datasets).map(key => ({
-                label: key,
-                data: datasets[key].data,
-                borderColor: datasets[key].color,
-                fill: false,
-                pointRadius: 3,
-                pointHoverRadius: 6
-            }))
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { title: { display: true, text: "Время" } },
-                y: { title: { display: true, text: "Температура (°C)" }, suggestedMin: 0, suggestedMax: 50 }
-            },
-            plugins: {
-                zoom: {
-                    pan: { 
-                        enabled: true, 
-                        mode: "x",  // Двигаем только по оси X
-                        onPanStart: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = false, 
-                        onPanComplete: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = true 
-                    },
-                    zoom: { 
-                        wheel: { enabled: true }, // Только колесиком мыши
-                        pinch: { enabled: false }, // Отключаем зум пальцами
-                        mode: "x" 
-                    }
-                }
-            }
-        }
-    });
-}
+    chart.options.scales.x.min = minIndex;
+    chart.options.scales.x.max = maxIndex;
+    chart.update();
+});
 
 function zoomIn() {
-    window.myChart.zoom(1.2);
+    chart.zoom(1.2);
 }
 
 function zoomOut() {
-    window.myChart.zoom(0.8);
+    chart.zoom(0.8);
 }
 
 function resetZoom() {
-    window.myChart.resetZoom();
+    chart.resetZoom();
+    scrollBar.value = 0;
 }
