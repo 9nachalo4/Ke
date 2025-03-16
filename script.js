@@ -34,6 +34,7 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
         });
 
         drawChart(labels, datasets);
+        setTimeout(() => showScrollbar(), 500); // Принудительное отображение полосы
     };
     reader.readAsText(file);
 });
@@ -67,23 +68,21 @@ function drawChart(labels, datasets) {
             },
             plugins: {
                 zoom: {
-                    pan: { 
-                        enabled: true, 
-                        mode: "x" // Двигаем только по оси X
-                    },
-                    zoom: { 
-                        wheel: { enabled: true },
-                        pinch: { enabled: true },
-                        mode: "x"
-                    }
+                    pan: { enabled: true, mode: "x" },
+                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: "x" }
                 }
             }
         }
     });
 
-    // Настройка полосы прокрутки
     scrollBar.max = labels.length - 10;
     scrollBar.value = 0;
+}
+
+// Функция для отображения полосы прокрутки
+function showScrollbar() {
+    document.getElementById("chart-container").style.overflowX = "scroll";
+    scrollBar.style.display = "block";
 }
 
 // Прокрутка графика полосой

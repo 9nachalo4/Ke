@@ -5,14 +5,16 @@ body {
 #chart-container {
     width: 100%;
     height: 70vh;
-    overflow-x: auto; /* Горизонтальная прокрутка */
+    overflow-x: scroll !important; /* Принудительная горизонтальная прокрутка */
+    white-space: nowrap;
 }
 canvas {
-    width: 200%; /* Увеличиваем ширину графика для скроллинга */
+    width: 200%; /* Увеличиваем ширину графика */
 }
 #scrollBar {
     width: 80%;
     margin-top: 10px;
+    display: block; /* Убедимся, что полоса видна */
 }
 .controls {
     margin-top: 10px;
