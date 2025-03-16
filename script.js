@@ -1,57 +1,54 @@
-document.getElementById('fileInput').addEventListener('change', function(event) {
+document.getElementById("fileInput").addEventListener("change", function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
+        const lines = e.target.result.split("\n").filter(line => line.trim() !== "");
         const labels = [];
-        const dataSets = {
-            "Реактор 1": { data: [], color: "red" },
-            "Реактор 2": { data: [], color: "green" },
-            "Реактор 3": { data: [], color: "blue" },
-            "Куб": { data: [], color: "orange" },
-            "Холодильник": { data: [], color: "purple" }
+        const datasets = {
+            "Реактор 1": { data: [], color: "orange" },
+            "Реактор 2": { data: [], color: "red" },
+            "Реактор 3": { data: [], color: "pink" },
+            "Куб": { data: [], color: "magenta" },
+            "Холодильник": { data: [], color: "blue" }
         };
 
         lines.forEach(line => {
             const parts = line.split(" --- ");
-            if (parts.length < 6) return;  // Пропускаем строки, если данных мало
+            if (parts.length < 6) return;
 
-            labels.push(parts[0].trim()); // Время фиксации
+            labels.push(parts[0].trim()); // Время
 
-            let index = 1;
-            for (let key in dataSets) {
-                const match = parts[index].match(/[-+]?\d*\.\d+/);
+            Object.keys(datasets).forEach((key, index) => {
+                const match = parts[index + 1].match(/[-+]?\d*\.\d+/);
                 if (match) {
-                    dataSets[key].data.push(parseFloat(match[0]));
+                    datasets[key].data.push(parseFloat(match[0]));
                 }
-                index++;
-            }
+            });
         });
 
-        drawChart(labels, dataSets);
+        createChart(labels, datasets);
     };
     reader.readAsText(file);
 });
 
-function drawChart(labels, dataSets) {
-    const ctx = document.getElementById('chartCanvas').getContext('2d');
-
+function createChart(labels, datasets) {
+    const ctx = document.getElementById("chartCanvas").getContext("2d");
     if (window.myChart) {
         window.myChart.destroy();
     }
 
     window.myChart = new Chart(ctx, {
-        type: 'line',
+        type: "line",
         data: {
             labels: labels,
-            datasets: Object.keys(dataSets).map((key) => ({
+            datasets: Object.keys(datasets).map(key => ({
                 label: key,
-                data: dataSets[key].data,
-                borderColor: dataSets[key].color,
+                data: datasets[key].data,
+                borderColor: datasets[key].color,
                 fill: false,
-                pointRadius: 3,
+                pointRadius: 2,
                 pointHoverRadius: 6
             }))
         },
@@ -60,33 +57,24 @@ function drawChart(labels, dataSets) {
             maintainAspectRatio: false,
             scales: {
                 x: { title: { display: true, text: "Время" } },
-                y: { title: { display: true, text: "Температура (°C)" }, suggestedMin: 0, suggestedMax: 100 }
+                y: { title: { display: true, text: "Температура (°C)" }, suggestedMin: 0, suggestedMax: 50 }
             },
             plugins: {
                 zoom: {
-                    pan: { enabled: true, mode: "x" },
-                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: "x" }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return `Время: ${tooltipItem.label}, Значение: ${tooltipItem.raw}°C`;
-                        }
+                    pan: { 
+                        enabled: true, 
+                        mode: "xy",  // Движение в любом направлении
+                        overScaleMode: "xy", // Перемещение вне пределов
+                        onPanStart: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = false, // Отключаем зум
+                        onPanComplete: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = true // Включаем зум
+                    },
+                    zoom: { 
+                        wheel: { enabled: true }, // Только колесиком
+                        pinch: { enabled: false }, // Отключаем зум на сенсоре
+                        mode: "xy" 
                     }
                 }
             }
         }
     });
-}
-
-function zoomIn() {
-    window.myChart.zoom(1.2);
-}
-
-function zoomOut() {
-    window.myChart.zoom(0.8);
-}
-
-function resetZoom() {
-    window.myChart.resetZoom();
 }
