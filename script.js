@@ -18,7 +18,7 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
             const parts = line.split(" --- ");
             if (parts.length < 6) return;
 
-            labels.push(parts[0].trim()); // Время
+            labels.push(parts[0].trim()); // Время фиксации
 
             Object.keys(datasets).forEach((key, index) => {
                 const match = parts[index + 1].match(/[-+]?\d*\.\d+/);
@@ -48,7 +48,7 @@ function createChart(labels, datasets) {
                 data: datasets[key].data,
                 borderColor: datasets[key].color,
                 fill: false,
-                pointRadius: 2,
+                pointRadius: 3,
                 pointHoverRadius: 6
             }))
         },
@@ -63,18 +63,29 @@ function createChart(labels, datasets) {
                 zoom: {
                     pan: { 
                         enabled: true, 
-                        mode: "xy",  // Движение в любом направлении
-                        overScaleMode: "xy", // Перемещение вне пределов
-                        onPanStart: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = false, // Отключаем зум
-                        onPanComplete: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = true // Включаем зум
+                        mode: "x",  // Двигаем только по оси X
+                        onPanStart: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = false, 
+                        onPanComplete: () => window.myChart.options.plugins.zoom.zoom.wheel.enabled = true 
                     },
                     zoom: { 
-                        wheel: { enabled: true }, // Только колесиком
-                        pinch: { enabled: false }, // Отключаем зум на сенсоре
-                        mode: "xy" 
+                        wheel: { enabled: true }, // Только колесиком мыши
+                        pinch: { enabled: false }, // Отключаем зум пальцами
+                        mode: "x" 
                     }
                 }
             }
         }
     });
+}
+
+function zoomIn() {
+    window.myChart.zoom(1.2);
+}
+
+function zoomOut() {
+    window.myChart.zoom(0.8);
+}
+
+function resetZoom() {
+    window.myChart.resetZoom();
 }
