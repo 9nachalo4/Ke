@@ -1,5 +1,5 @@
-let chart;
-let scrollBar = document.getElementById("scrollBar");
+let originalLabels = [];
+let originalData = {};
 
 document.getElementById("fileInput").addEventListener("change", function(event) {
     const file = event.target.files[0];
@@ -8,8 +8,8 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
     const reader = new FileReader();
     reader.onload = function(e) {
         const lines = e.target.result.split("\n").filter(line => line.trim() !== "");
-        const labels = [];
-        const datasets = {
+        originalLabels = [];
+        originalData = {
             "Реактор 1": { data: [], color: "red" },
             "Реактор 2": { data: [], color: "green" },
             "Реактор 3": { data: [], color: "blue" },
@@ -21,20 +21,19 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
             const parts = line.split(" --- ");
             if (parts.length < 6) return;
 
-            labels.push(parts[0].trim());
+            originalLabels.push(parts[0].trim());
 
             let index = 1;
-            for (let key in datasets) {
+            for (let key in originalData) {
                 const match = parts[index].match(/[-+]?\d*\.\d+/);
                 if (match) {
-                    datasets[key].data.push(parseFloat(match[0]));
+                    originalData[key].data.push(parseFloat(match[0]));
                 }
                 index++;
             }
         });
 
-        drawChart(labels, datasets);
-        setTimeout(() => showScrollbar(), 500); // Принудительное отображение полосы
+        drawChart(originalLabels, originalData);
     };
     reader.readAsText(file);
 });
@@ -74,45 +73,41 @@ function drawChart(labels, datasets) {
             }
         }
     });
-
-    scrollBar.max = labels.length - 10;
-    scrollBar.value = 0;
 }
 
-// Функция для отображения полосы прокрутки
-function showScrollbar() {
-    document.getElementById("chart-container").style.overflowX = "scroll";
-    scrollBar.style.display = "block";
+// Фильтрация данных по времени
+function filterChartData() {
+    const startTime = document.getElementById("startTime").value;
+    const endTime = document.getElementById("endTime").value;
+
+    const filteredLabels = [];
+    const filteredData = {
+        "Реактор 1": { data: [], color: "red" },
+        "Реактор 2": { data: [], color: "green" },
+        "Реактор 3": { data: [], color: "blue" },
+        "Куб": { data: [], color: "orange" },
+        "Холодильник": { data: [], color: "purple" }
+    };
+
+    for (let i = 0; i < originalLabels.length; i++) {
+        if (originalLabels[i] >= startTime && originalLabels[i] <= endTime) {
+            filteredLabels.push(originalLabels[i]);
+            for (let key in originalData) {
+                filteredData[key].data.push(originalData[key].data[i]);
+            }
+        }
+    }
+
+    drawChart(filteredLabels, filteredData);
 }
 
-// Прокрутка графика полосой
-scrollBar.addEventListener("input", function() {
-    const minIndex = parseInt(scrollBar.value);
-    const maxIndex = minIndex + 10;
-
-    chart.options.scales.x.min = minIndex;
-    chart.options.scales.x.max = maxIndex;
-    chart.update();
-});
-
-function zoomIn() {
-    window.myChart.zoom(1.2);
-}
-
-function zoomOut() {
-    window.myChart.zoom(0.8);
-}
-
-function resetZoom() {
-    window.myChart.resetZoom();
-    scrollBar.value = 0;
-}
+// Сохранение графика в изображение
 function saveChartAsImage() {
     const canvas = document.getElementById("chartCanvas");
-    const image = canvas.toDataURL("image/png"); // Создаём изображение PNG
+    const image = canvas.toDataURL("image/png");
 
     const link = document.createElement("a");
     link.href = image;
-    link.download = "graph.png"; // Имя файла
-    link.click(); // Запускаем скачивание
+    link.download = "filtered_graph.png";
+    link.click();
 }
