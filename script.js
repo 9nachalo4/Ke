@@ -107,3 +107,12 @@ function resetZoom() {
     window.myChart.resetZoom();
     scrollBar.value = 0;
 }
+function saveChartAsImage() {
+    const canvas = document.getElementById("chartCanvas");
+    const image = canvas.toDataURL("image/png"); // Создаём изображение PNG
+
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "graph.png"; // Имя файла
+    link.click(); // Запускаем скачивание
+}
