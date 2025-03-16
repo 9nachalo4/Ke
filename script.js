@@ -29,18 +29,34 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
                     label: 'Значение',
                     data: data,
                     borderColor: 'blue',
-                    borderWidth: 1,
-                    pointRadius: 3,
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
                     fill: false
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Время' } },
+                    y: { title: { display: true, text: 'Значение' } }
+                },
                 plugins: {
                     zoom: {
-                        pan: { enabled: true, mode: 'x' },  // Движение по оси X
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                        pan: {
+                            enabled: true,    // Включает перемещение
+                            mode: 'x',       // Движение по X
+                            modifierKey: 'ctrl' // Движение только при зажатом Ctrl
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,  // Зум колесиком мыши
+                                modifierKey: 'ctrl' // Зум только при зажатом Ctrl
+                            },
+                            pinch: { enabled: true },  // Зум на тачскрине
+                            mode: 'x'  // Зум по оси X
+                        }
                     }
                 },
                 onClick: function(evt, elements) {
