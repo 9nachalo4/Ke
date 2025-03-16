@@ -5,10 +5,10 @@ body {
 #chart-container {
     width: 100%;
     height: 70vh;
-    overflow-x: auto;
+    overflow-x: auto; /* Горизонтальная прокрутка */
 }
 canvas {
-    width: 200%; /* Увеличиваем ширину для горизонтальной прокрутки */
+    width: 200%; /* Увеличиваем ширину графика для скроллинга */
 }
 #scrollBar {
     width: 80%;

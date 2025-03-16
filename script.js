@@ -1,3 +1,6 @@
+let chart;
+let scrollBar = document.getElementById("scrollBar");
+
 document.getElementById("fileInput").addEventListener("change", function(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -16,9 +19,9 @@ document.getElementById("fileInput").addEventListener("change", function(event) 
 
         lines.forEach(line => {
             const parts = line.split(" --- ");
-            if (parts.length < 6) return;  // Пропускаем строки, если данных мало
+            if (parts.length < 6) return;
 
-            labels.push(parts[0].trim()); // Время фиксации
+            labels.push(parts[0].trim());
 
             let index = 1;
             for (let key in datasets) {
@@ -43,15 +46,15 @@ function drawChart(labels, datasets) {
     }
 
     window.myChart = new Chart(ctx, {
-        type: 'line',
+        type: "line",
         data: {
             labels: labels,
-            datasets: Object.keys(datasets).map((key) => ({
+            datasets: Object.keys(datasets).map(key => ({
                 label: key,
                 data: datasets[key].data,
                 borderColor: datasets[key].color,
                 fill: false,
-                pointRadius: 3,
+                pointRadius: 2,
                 pointHoverRadius: 6
             }))
         },
@@ -60,24 +63,38 @@ function drawChart(labels, datasets) {
             maintainAspectRatio: false,
             scales: {
                 x: { title: { display: true, text: "Время" } },
-                y: { title: { display: true, text: "Температура (°C)" }, suggestedMin: 0, suggestedMax: 100 }
+                y: { title: { display: true, text: "Температура (°C)" }, suggestedMin: 0, suggestedMax: 50 }
             },
             plugins: {
                 zoom: {
-                    pan: { enabled: true, mode: "x" },
-                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: "x" }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return `Время: ${tooltipItem.label}, Значение: ${tooltipItem.raw}°C`;
-                        }
+                    pan: { 
+                        enabled: true, 
+                        mode: "x" // Двигаем только по оси X
+                    },
+                    zoom: { 
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: "x"
                     }
                 }
             }
         }
     });
+
+    // Настройка полосы прокрутки
+    scrollBar.max = labels.length - 10;
+    scrollBar.value = 0;
 }
+
+// Прокрутка графика полосой
+scrollBar.addEventListener("input", function() {
+    const minIndex = parseInt(scrollBar.value);
+    const maxIndex = minIndex + 10;
+
+    chart.options.scales.x.min = minIndex;
+    chart.options.scales.x.max = maxIndex;
+    chart.update();
+});
 
 function zoomIn() {
     window.myChart.zoom(1.2);
@@ -89,4 +106,5 @@ function zoomOut() {
 
 function resetZoom() {
     window.myChart.resetZoom();
+    scrollBar.value = 0;
 }
