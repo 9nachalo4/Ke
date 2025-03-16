@@ -45,17 +45,13 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
                 plugins: {
                     zoom: {
                         pan: {
-                            enabled: true,    // Включает перемещение
-                            mode: 'x',       // Движение по X
-                            modifierKey: 'ctrl' // Движение только при зажатом Ctrl
+                            enabled: true,   // Перемещение мышью
+                            mode: 'x'        // Двигаем только по оси X
                         },
                         zoom: {
-                            wheel: {
-                                enabled: true,  // Зум колесиком мыши
-                                modifierKey: 'ctrl' // Зум только при зажатом Ctrl
-                            },
-                            pinch: { enabled: true },  // Зум на тачскрине
-                            mode: 'x'  // Зум по оси X
+                            wheel: { enabled: true }, // Зум колесиком
+                            pinch: { enabled: true }, // Зум на тачскрине
+                            mode: 'x'                // Зумируем только по X
                         }
                     }
                 },
